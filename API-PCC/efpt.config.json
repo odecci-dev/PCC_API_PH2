@@ -1,0 +1,198 @@
+﻿{
+   "CodeGenerationMode": 3,
+   "ContextClassName": "PCC_DEVContext",
+   "ContextNamespace": "Data",
+   "FilterSchemas": false,
+   "IncludeConnectionString": false,
+   "ModelNamespace": null,
+   "OutputContextPath": "Data",
+   "OutputPath": "Models",
+   "PreserveCasingWithRegex": true,
+   "ProjectRootNamespace": "API_PCC",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 2,
+   "SelectedToBeGenerated": 0,
+   "T4TemplatePath": null,
+   "Tables": [
+      {
+         "Name": "[dbo].[A_Birth_Type]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[A_Blood_Comp]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[A_Breed]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[A_Buff_Animal]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[A_Family]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[A_Type_Ownership]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Action_tbl]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[H_Buff_Herd]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[H_Buffalo_Type]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[H_Farmer_Affiliation]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[H_Feeding_System]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[H_Herd_Classification]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Module_tbl]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_ApiTokenModel]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_audittrail]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_CenterModel]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_DamModel]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_DataGroup]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_FarmerBreedType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_FarmOwner]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_HerdFarmer]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_Join_BuffHerd]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_MailSenderCredential]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_OriginOfAcquisitionModel]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_RegistrationOTPModel]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_Settings]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_SireModel]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_StatusModel]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_TokenModel]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_TransferModel]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_UserAccessModel]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_UserAccessType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_UsersModel]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[tbl_UserTypeModel]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[TblBLoodCalculator]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[User_ActionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[User_ModuleTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[User_UserTypeAccessTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[GetUserLogIn]",
+         "ObjectType": 1
+      }
+   ],
+   "UiHint": null,
+   "UncountableWords": null,
+   "UseAsyncStoredProcedureCalls": true,
+   "UseBoolPropertiesWithoutDefaultSql": false,
+   "UseDatabaseNames": false,
+   "UseDateOnlyTimeOnly": false,
+   "UseDbContextSplitting": false,
+   "UseDecimalDataAnnotationForSprocResult": true,
+   "UseFluentApiOnly": true,
+   "UseHandleBars": false,
+   "UseHierarchyId": false,
+   "UseInflector": true,
+   "UseLegacyPluralizer": false,
+   "UseManyToManyEntity": false,
+   "UseNoDefaultConstructor": false,
+   "UseNoNavigations": false,
+   "UseNoObjectFilter": false,
+   "UseNodaTime": false,
+   "UseNullableReferences": false,
+   "UsePrefixNavigationNaming": false,
+   "UseSchemaFolders": false,
+   "UseSchemaNamespaces": false,
+   "UseSpatial": false,
+   "UseT4": false
+}
