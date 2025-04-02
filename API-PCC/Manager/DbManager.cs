@@ -215,5 +215,21 @@ namespace API_PCC.Manager
                 return ex.Message + "!";
             }
         }
-    }
+
+		public async Task<string> DB_WithParamAsync(string query, params SqlParameter[] parameters)
+		{
+			ConnectioStr();
+
+			using (SqlConnection conn = new SqlConnection(cnnstr))
+			{
+				await conn.OpenAsync();
+				using (SqlCommand cmd = new SqlCommand(query, conn))
+				{
+					cmd.Parameters.AddRange(parameters); // Add parameters properly
+					int rowsAffected = await cmd.ExecuteNonQueryAsync();
+					return rowsAffected > 0 ? "Update successful" : "No rows updated";
+				}
+			}
+		}
+	}
 }
