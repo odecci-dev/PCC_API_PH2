@@ -5,14 +5,20 @@ using API_PCC.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using static API_PCC.Controllers.UserController;
+IConfiguration config = new ConfigurationBuilder()
+        .SetBasePath(Path.GetPathRoot(Environment.SystemDirectory))
+        .AddJsonFile("app/pcc/appconfig.json", optional: true, reloadOnChange: true)
+        .Build();
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 // Add services to the container.
 builder.Services.AddDbContext<PCC_DEVContext>(options =>
-options.UseSqlServer(builder.Configuration.GetConnectionString("DevConnection")));
+options.UseSqlServer((config["ConnectionStrings:DevConnection"])));
 var appSettingsSection = builder.Configuration.GetSection("Mail");
-builder.Services.Configure<EmailSettings>(appSettingsSection);
+var emailSettingsSection = config.GetSection("ConnectionStrings:Mail");
+var emailSettings = emailSettingsSection.Get<List<EmailSettings>>();
+builder.Services.Configure<List<EmailSettings>>(emailSettingsSection);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -20,11 +26,6 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(s =>
 {
-    //c.SwaggerDoc("v1", new OpenApiInfo
-    //{
-    //    Title = "Authentication",
-    //    Version = "v1"
-    //});
     s.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme (Example: 'Bearer 12345abcdef')",

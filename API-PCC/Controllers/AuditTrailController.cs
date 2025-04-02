@@ -26,6 +26,8 @@ namespace API_PCC.Controllers
     [ApiController]
     public class AuditTrailController : ControllerBase
     {
+       
+
         private readonly PCC_DEVContext _context;
         DbManager db = new DbManager();
         DBMethods dbmet = new DBMethods();

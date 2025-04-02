@@ -147,7 +147,7 @@ namespace API_PCC.Controllers
                 {
                     return Problem("Entity set 'PCC_DEVContext.OTP' is null!");
                 }
-
+                var list = _context.TblRegistrationOtpmodels.ToList();
                 var registrationOtpModel = _context.TblRegistrationOtpmodels.Where(otpModel => otpModel.Email == data.Email && otpModel.Status == 4).FirstOrDefault();
                 if (registrationOtpModel != null)
                 {

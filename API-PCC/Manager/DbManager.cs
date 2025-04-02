@@ -22,19 +22,16 @@ namespace API_PCC.Manager
         string cnnstr = "";
         DBConn db = new DBConn();
 
+        IConfiguration config = new ConfigurationBuilder()
+           .SetBasePath(Path.GetPathRoot(Environment.SystemDirectory))
+           .AddJsonFile("app/pcc/appconfig.json", optional: true, reloadOnChange: true)
+           .Build();
 
         public void ConnectioStr()
         {
-            //cnnstr = "Data Source=LEARI-PC;Initial Catalog=PCC_DEV;User ID=pcc-server;Password=pccdev12345!";// local
-            //cnnstr = "Data Source=EC2AMAZ-V52FJK1;Initial Catalog=PCC_DEV;User ID=pcc-server;Password=pccdev1234!"; //Odecci Server
-            //cnnstr = "Data Source=WIN-RLNNENEQU3R;Initial Catalog=PCC_SIT;User ID=pcc-server;Password=pccdev1234!"; //Odecci Server
-            //cnnstr = "Data Source=WIN-RLNNENEQU3R;Initial Catalog=PCC_DEV_ENV;User ID=pcc-server;Password=pccdev1234!"; //Odecci Server Env
-            //cnnstr = "Data Source=EC2AMAZ-V52FJK1;Initial Catalog=PCC_SIT;User ID=pcc-server;Password=pccdev1234!"; //Odecci Server ...
-            //cnnstr = "Data Source=DESKTOP-9P0BJ07;Initial Catalog=PCC_SIT;User ID=pcc-server;Password=pccdev1234!"; //Odecci Server 
-            //cnnstr = "Data Source=DESKTOP-9P0BJ07;Initial Catalog=PCC_DEV;User ID=pcc-server;Password=pccdev1234!"; //Odecci Server
-            //cnnstr = "Data Source=DESKTOP-0SN0AHC;Initial Catalog=PCC_DEV;User ID=pcc-server;Password=pccdev1234!"; //Odecci pc 
-            cnnstr = "Server=(localdb)\\ProjectModels;Database=PCC_SIT;Trusted_Connection=True;MultipleActiveResultSets=True;"; // brandon loacl db
-            conn = new SqlConnection(cnnstr);
+            var url = config["ConnectionStrings:Pcc_Constrings"];
+         
+            conn = new SqlConnection(url);
         }
         public DataSet SelectDb(string value)
         {
