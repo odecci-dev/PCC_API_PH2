@@ -270,7 +270,7 @@ namespace API_PCC.Controllers
                                    combined => combined.herd.Center,
                                    center => center.Id,
                                    (combined, center) => new { combined.animal, center })
-                             .Where(result => result.center.Id== searchFilter.centerid)
+                             .Where(result => result.center.Id == searchFilter.centerid)
                              .Select(result => result.animal);
 
             //if (!searchFilter.userid.IsNullOrEmpty())
