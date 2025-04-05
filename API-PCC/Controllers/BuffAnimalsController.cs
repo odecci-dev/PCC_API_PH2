@@ -93,7 +93,7 @@ namespace API_PCC.Controllers
             int totalItems = 0;
             int totalPages = 0;
          
-          var  buffanimal = dbmet.getanimallist(searchFilter.centerid, searchFilter.userid).ToList();
+          var  buffanimal = dbmet.GetAnimalList(searchFilter.centerid, searchFilter.userid).ToList();
 
           
 

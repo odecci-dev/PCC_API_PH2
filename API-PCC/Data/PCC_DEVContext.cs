@@ -77,8 +77,10 @@ public partial class PCC_DEVContext : DbContext
 
     public virtual DbSet<A_Family> family { get; set; }
     public virtual DbSet<TransferModel> TransferModels { get; set; }
-   
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+
+	public virtual DbSet<TblTechnician> TblTechnicians { get; set; }
+
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<HBuffHerd>()
         .HasMany(e => e.buffaloType)
