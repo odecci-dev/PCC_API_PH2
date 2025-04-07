@@ -9,6 +9,7 @@ using PeterO.Numbers;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Reflection;
 using System.Runtime.ConstrainedExecution;
 using System.Text;
 using static API_PCC.Controllers.BloodCompsController;
@@ -248,282 +249,142 @@ namespace API_PCC.Manager
 
             return result;
         }
-        public List<animalresult> getanimallist(int? centerid, string? userid)
-        {
-            string sql = "";
-            var result = new List<animalresult>();
-            if ((centerid != null && centerid != 0) && (userid == null || userid == ""))
-            {
-                string center_sql = $@"SELECT  Herd_Code,Center from H_Buff_Herd
-                    WHERE        H_Buff_Herd.Center = '" + centerid + "'";
-                DataTable center_table = db.SelectDb(center_sql).Tables[0];
-                if (center_table.Rows.Count != 0)
-                {
-                    string hercode = "";
-                    foreach (DataRow dr in center_table.Rows)
-                    {
-                        hercode += "'" + dr["Herd_Code"].ToString() + "'" + ",";
-                    }
 
-                    // query for center and userid
-                    sql = $@"SELECT        A_Buff_Animal.id, A_Buff_Animal.Animal_ID_Number, A_Buff_Animal.Animal_Name, A_Buff_Animal.Photo, A_Buff_Animal.Herd_Code, A_Buff_Animal.RFID_Number, A_Buff_Animal.Date_of_Birth, A_Buff_Animal.Sex, 
-                             A_Buff_Animal.Birth_Type, A_Buff_Animal.Country_Of_Birth, A_Buff_Animal.Origin_Of_Acquisition, A_Buff_Animal.Date_Of_Acquisition, A_Buff_Animal.Marking, A_Buff_Animal.Type_Of_Ownership, A_Buff_Animal.Delete_Flag, 
-                             A_Buff_Animal.Status, A_Buff_Animal.Created_By, A_Buff_Animal.Created_Date, A_Buff_Animal.Updated_By, A_Buff_Animal.Update_Date, A_Buff_Animal.Date_Deleted, A_Buff_Animal.Deleted_By, 
-                             A_Buff_Animal.Date_Restored, A_Buff_Animal.Restored_By, A_Buff_Animal.BreedRegistryNumber, A_Breed.Breed_Code, A_Blood_Comp.Blood_Code, tbl_StatusModel.Status AS StatusName, A_Buff_Animal.FarmerId, A_Buff_Animal.GroupId
-                             FROM            A_Buff_Animal INNER JOIN
-                             A_Breed ON A_Buff_Animal.Breed_Code = CAST(A_Breed.Id AS VARCHAR(255))     inner JOIN
-                             A_Blood_Comp ON  A_Buff_Animal.Blood_Code = CAST(A_Blood_Comp.Id AS VARCHAR(255)) inner JOIN
-                             tbl_StatusModel ON A_Buff_Animal.Status = tbl_StatusModel.id
-                             WHERE        (A_Buff_Animal.Delete_Flag <> 1) and   A_Buff_Animal.Herd_Code IN (" + hercode.Substring(0, hercode.Length - 1) + ")";
+		public List<animalresult> GetAnimalList(int? centerid, string? userid)
+		{
+			var result = new List<animalresult>();
 
-                    DataTable table2 = db.SelectDb(sql).Tables[0];
+			if (centerid != null && centerid != 0)
+			{
+				var herdCodes = GetHerdCodes(centerid.Value);
+				if (herdCodes.Count == 0)
+				{
+					result.Add(new animalresult()); // Optional: return empty result instead
+					return result;
+				}
 
-                    foreach (DataRow dr in table2.Rows)
-                    {
-                        var item = new animalresult();
-                        item.Id = dr["Id"].ToString();
-                        item.Animal_ID_Number = dr["Animal_ID_Number"].ToString();
-                        item.Animal_Name = dr["Animal_Name"].ToString();
-                        item.Photo = dr["Photo"].ToString();
-                        item.Herd_Code = dr["Herd_Code"].ToString();
-                        item.Farmer_Id = dr["FarmerId"].ToString();
-                        item.Group_Id = dr["GroupId"].ToString();
-                        item.RFID_Number = dr["RFID_Number"].ToString();
-                        item.Date_of_Birth = dr["Date_of_Birth"].ToString();
-                        item.Sex = dr["Sex"].ToString();
-                        item.Birth_Type = dr["Birth_Type"].ToString();
-                        item.Country_Of_Birth = dr["Country_Of_Birth"].ToString();
-                        item.Origin_Of_Acquisition = dr["Origin_Of_Acquisition"].ToString();
-                        item.Date_Of_Acquisition = dr["Date_Of_Acquisition"].ToString();
-                        item.Marking = dr["Marking"].ToString();
-                        item.Type_Of_Ownership = dr["Type_Of_Ownership"].ToString();
-                        item.Delete_Flag = dr["Delete_Flag"].ToString();
-                        item.BreedRegistryNumber = dr["BreedRegistryNumber"].ToString();
-                        item.Breed_Code = dr["Breed_Code"].ToString();
-                        item.Blood_Code = dr["Blood_Code"].ToString();
-                        item.Restored_By = dr["Restored_By"].ToString();
-                        item.Date_Restored = dr["Date_Restored"].ToString();
-                        item.Date_Deleted = dr["Date_Deleted"].ToString();
-                        item.Update_Date = dr["Update_Date"].ToString();
-                        item.Updated_By = dr["Updated_By"].ToString();
-                        item.Created_Date = dr["Created_Date"].ToString();
-                        item.Created_By = dr["Created_By"].ToString();
-                        item.Deleted_By = dr["Deleted_By"].ToString();
-                        item.Delete_Flag = dr["Delete_Flag"].ToString();
-                        item.Status = dr["Status"].ToString();
-                        item.StatusName = dr["StatusName"].ToString();
+				if (!string.IsNullOrEmpty(userid))
+				{
+					var user = GetUserDetails(userid);
+					var farmerExists = FarmerExists(user);
 
-                        result.Add(item);
-                    }
-                }
-                else
-                {
-                    var item = new animalresult();
-                    item.Id = "";
-                    item.Animal_ID_Number = "";
-                    item.Animal_Name = "";
-                    item.Photo = "";
-                    item.Herd_Code = "";
-                    item.RFID_Number = "";
-                    item.Date_of_Birth = "";
-                    item.Sex = "";
-                    item.Birth_Type = "";
-                    item.Country_Of_Birth = "";
-                    item.Origin_Of_Acquisition = "";
-                    item.Date_Of_Acquisition = "";
-                    item.Marking = "";
-                    item.Type_Of_Ownership = "";
-                    item.Delete_Flag = "";
-                    item.BreedRegistryNumber = "";
-                    item.Breed_Code = "";
-                    item.Blood_Code = "";
-                    item.Restored_By = "";
-                    item.Date_Restored = "";
-                    item.Date_Deleted = "";
-                    item.Update_Date = "";
-                    item.Updated_By = "";
-                    item.Created_Date = "";
-                    item.Created_By = "";
-                    item.Deleted_By = "";
-                    item.Delete_Flag = "";
-                    item.Status = "";
-                    item.StatusName = "";
+					if (!farmerExists)
+					{
+						result.Add(new animalresult()); // Optional: return empty result instead
+						return result;
+					}
+				}
 
+				var herdCodeStr = string.Join(",", herdCodes.Select(h => $"'{h}'"));
+				var sql = GetAnimalQuery($"WHERE (A_Buff_Animal.Delete_Flag <> 1) AND A_Buff_Animal.Herd_Code IN ({herdCodeStr})");
+				var table = db.SelectDb(sql).Tables[0];
+				result = table.AsEnumerable().Select(MapAnimalResult).ToList();
+			}
+			else
+			{
+				var sql = GetAnimalQuery("WHERE (A_Buff_Animal.Delete_Flag <> 1)");
+				var table = db.SelectDb(sql).Tables[0];
+				result = table.AsEnumerable().Select(MapAnimalResult).ToList();
+			}
 
-                    result.Add(item);
-                }
+			return result;
+		}
 
-            }
-            else if ((centerid != null && centerid != 0) && (userid != null && userid != ""))
-            {
-                /// select tblusermodel get fname,lname,address
-                string user_sql = $@"SELECT  Fname,Lname,Address  from tbl_UsersModel WHERE Id = '" + userid + "'";
-                DataTable user_table = db.SelectDb(user_sql).Tables[0];
+		private List<string> GetHerdCodes(int centerId)
+		{
+			var herdCodes = new List<string>();
+			string sql = $"SELECT Herd_Code FROM H_Buff_Herd WHERE Center = '{centerId}'";
+			DataTable dt = db.SelectDb(sql).Tables[0];
 
-                string farmer_sql = $@"SELECT [Id]
-                                      ,[FirstName]
-                                      ,[LastName]
-                                      ,[Address]
-                                      ,[TelephoneNumber]
-                                      ,[MobileNumber]
-                                      ,[Email]
-                                  FROM [dbo].[tbl_Farmers] where FirstName like '%" + user_table.Rows[0]["Fname"].ToString() + "%' " +
-                                  "and LastName like '%" + user_table.Rows[0]["Lname"].ToString() + "%' " +
-                                  "and Address like '%" + user_table.Rows[0]["Address"].ToString() + "%'";
-                DataTable farmer_table = db.SelectDb(farmer_sql).Tables[0];
-                if (farmer_table.Rows.Count != 0)
-                {
-                    string center_sql = $@"SELECT  Herd_Code,Center from H_Buff_Herd
-                    WHERE        H_Buff_Herd.Center = '" + centerid + "'";
-                    DataTable center_table = db.SelectDb(center_sql).Tables[0];
+			foreach (DataRow row in dt.Rows)
+			{
+				herdCodes.Add(row["Herd_Code"].ToString()!);
+			}
+			return herdCodes;
+		}
 
-                    string hercode = "";
-                    foreach (DataRow dr in center_table.Rows)
-                    {
-                        hercode += "'" + dr["Herd_Code"].ToString() + " '" + ",";
-                    }
+		private (string Fname, string Lname, string Address) GetUserDetails(string userId)
+		{
+			string sql = $"SELECT Fname, Lname, Address FROM tbl_UsersModel WHERE Id = '{userId}'";
+			var dt = db.SelectDb(sql).Tables[0];
+			if (dt.Rows.Count > 0)
+			{
+				var row = dt.Rows[0];
+				return (row["Fname"].ToString(), row["Lname"].ToString(), row["Address"].ToString())!;
+			}
+			return ("", "", "");
+		}
 
-                    // query for center and userid
-                    sql = $@"SELECT        A_Buff_Animal.id, A_Buff_Animal.Animal_ID_Number, A_Buff_Animal.Animal_Name, A_Buff_Animal.Photo, A_Buff_Animal.Herd_Code, A_Buff_Animal.RFID_Number, A_Buff_Animal.Date_of_Birth, A_Buff_Animal.Sex, 
-                             A_Buff_Animal.Birth_Type, A_Buff_Animal.Country_Of_Birth, A_Buff_Animal.Origin_Of_Acquisition, A_Buff_Animal.Date_Of_Acquisition, A_Buff_Animal.Marking, A_Buff_Animal.Type_Of_Ownership, A_Buff_Animal.Delete_Flag, 
-                             A_Buff_Animal.Status, A_Buff_Animal.Created_By, A_Buff_Animal.Created_Date, A_Buff_Animal.Updated_By, A_Buff_Animal.Update_Date, A_Buff_Animal.Date_Deleted, A_Buff_Animal.Deleted_By, 
-                             A_Buff_Animal.Date_Restored, A_Buff_Animal.Restored_By, A_Buff_Animal.BreedRegistryNumber, A_Breed.Breed_Code, A_Blood_Comp.Blood_Code, tbl_StatusModel.Status AS StatusName
-                             FROM            A_Buff_Animal INNER JOIN
-                             A_Breed ON A_Buff_Animal.Breed_Code = CAST(A_Breed.Id AS VARCHAR(255))     inner JOIN
-                             A_Blood_Comp ON  A_Buff_Animal.Blood_Code = CAST(A_Blood_Comp.Id AS VARCHAR(255)) inner JOIN
-                             tbl_StatusModel ON A_Buff_Animal.Status = tbl_StatusModel.id
-                             WHERE        (A_Buff_Animal.Delete_Flag <> 1) and   A_Buff_Animal.Herd_Code IN (" + hercode.Substring(0, hercode.Length - 1) + ")";
+		private bool FarmerExists((string Fname, string Lname, string Address) user)
+		{
+			string sql = $@"
+                SELECT Id FROM tbl_Farmers 
+                WHERE FirstName LIKE '%{user.Fname}%' 
+                AND LastName LIKE '%{user.Lname}%'
+                AND Address LIKE '%{user.Address}%'";
 
-                    DataTable table2 = db.SelectDb(sql).Tables[0];
+			var dt = db.SelectDb(sql).Tables[0];
+			return dt.Rows.Count > 0;
+		}
 
-                    foreach (DataRow dr in table2.Rows)
-                    {
-                        var item = new animalresult();
-                        item.Id = dr["Id"].ToString();
-                        item.Animal_ID_Number = dr["Animal_ID_Number"].ToString();
-                        item.Animal_Name = dr["Animal_Name"].ToString();
-                        item.Photo = dr["Photo"].ToString();
-                        item.Herd_Code = dr["Herd_Code"].ToString();
-                        item.RFID_Number = dr["RFID_Number"].ToString();
-                        item.Date_of_Birth = dr["Date_of_Birth"].ToString();
-                        item.Sex = dr["Sex"].ToString();
-                        item.Birth_Type = dr["Birth_Type"].ToString();
-                        item.Country_Of_Birth = dr["Country_Of_Birth"].ToString();
-                        item.Origin_Of_Acquisition = dr["Origin_Of_Acquisition"].ToString();
-                        item.Date_Of_Acquisition = dr["Date_Of_Acquisition"].ToString();
-                        item.Marking = dr["Marking"].ToString();
-                        item.Type_Of_Ownership = dr["Type_Of_Ownership"].ToString();
-                        item.Delete_Flag = dr["Delete_Flag"].ToString();
-                        item.BreedRegistryNumber = dr["BreedRegistryNumber"].ToString();
-                        item.Breed_Code = dr["Breed_Code"].ToString();
-                        item.Blood_Code = dr["Blood_Code"].ToString();
-                        item.Restored_By = dr["Restored_By"].ToString();
-                        item.Date_Restored = dr["Date_Restored"].ToString();
-                        item.Date_Deleted = dr["Date_Deleted"].ToString();
-                        item.Update_Date = dr["Update_Date"].ToString();
-                        item.Updated_By = dr["Updated_By"].ToString();
-                        item.Created_Date = dr["Created_Date"].ToString();
-                        item.Created_By = dr["Created_By"].ToString();
-                        item.Deleted_By = dr["Deleted_By"].ToString();
-                        item.Delete_Flag = dr["Delete_Flag"].ToString();
-                        item.Status = dr["Status"].ToString();
-                        item.StatusName = dr["StatusName"].ToString();
+		private string GetAnimalQuery(string whereClause)
+		{
+			return $@"
+                SELECT 
+                    A_Buff_Animal.id, A_Buff_Animal.Animal_ID_Number, A_Buff_Animal.Animal_Name, A_Buff_Animal.Photo, 
+                    A_Buff_Animal.Herd_Code, A_Buff_Animal.RFID_Number, A_Buff_Animal.Date_of_Birth, A_Buff_Animal.Sex,
+                    A_Buff_Animal.Birth_Type, A_Buff_Animal.Country_Of_Birth, A_Buff_Animal.Origin_Of_Acquisition,
+                    A_Buff_Animal.Date_Of_Acquisition, A_Buff_Animal.Marking, A_Buff_Animal.Type_Of_Ownership,
+                    A_Buff_Animal.Delete_Flag, A_Buff_Animal.Status, A_Buff_Animal.Created_By, A_Buff_Animal.Created_Date,
+                    A_Buff_Animal.Updated_By, A_Buff_Animal.Update_Date, A_Buff_Animal.Date_Deleted, A_Buff_Animal.Deleted_By,
+                    A_Buff_Animal.Date_Restored, A_Buff_Animal.Restored_By, A_Buff_Animal.BreedRegistryNumber,
+                    A_Breed.Breed_Code, A_Blood_Comp.Blood_Code, tbl_StatusModel.Status AS StatusName,
+                    A_Buff_Animal.FarmerId, A_Buff_Animal.GroupId
+                    FROM A_Buff_Animal
+                    INNER JOIN A_Breed ON A_Buff_Animal.Breed_Code = CAST(A_Breed.Id AS VARCHAR(255))
+                    INNER JOIN A_Blood_Comp ON A_Buff_Animal.Blood_Code = CAST(A_Blood_Comp.Id AS VARCHAR(255))
+                    INNER JOIN tbl_StatusModel ON A_Buff_Animal.Status = tbl_StatusModel.id
+                    {whereClause}";
+		}
 
+		private animalresult MapAnimalResult(DataRow dr)
+		{
+			return new animalresult
+			{
+				Id = dr["Id"]?.ToString()!,
+				Animal_ID_Number = dr["Animal_ID_Number"]?.ToString()!,
+				Animal_Name = dr["Animal_Name"]?.ToString()!,
+				Photo = dr["Photo"]?.ToString()!,
+				Herd_Code = dr["Herd_Code"]?.ToString()!,
+				Farmer_Id = dr["FarmerId"]?.ToString()!,
+				Group_Id = dr["GroupId"]?.ToString()!,
+				RFID_Number = dr["RFID_Number"]?.ToString()!,
+				Date_of_Birth = dr["Date_of_Birth"]?.ToString()!,
+				Sex = dr["Sex"]?.ToString()!,
+				Birth_Type = dr["Birth_Type"]?.ToString()!,
+				Country_Of_Birth = dr["Country_Of_Birth"]?.ToString()!,
+				Origin_Of_Acquisition = dr["Origin_Of_Acquisition"]?.ToString()!,
+				Date_Of_Acquisition = dr["Date_Of_Acquisition"]?.ToString()!,
+				Marking = dr["Marking"]?.ToString()!,
+				Type_Of_Ownership = dr["Type_Of_Ownership"]?.ToString()!,
+				Delete_Flag = dr["Delete_Flag"]?.ToString()!,
+				BreedRegistryNumber = dr["BreedRegistryNumber"]?.ToString()!,
+				Breed_Code = dr["Breed_Code"]?.ToString()!,
+				Blood_Code = dr["Blood_Code"]?.ToString()!,
+				Restored_By = dr["Restored_By"]?.ToString()!,
+				Date_Restored = dr["Date_Restored"]?.ToString()!,
+				Date_Deleted = dr["Date_Deleted"]?.ToString()!,
+				Update_Date = dr["Update_Date"]?.ToString()!,
+				Updated_By = dr["Updated_By"]?.ToString()!,
+				Created_Date = dr["Created_Date"]?.ToString()!,
+				Created_By = dr["Created_By"]?.ToString()!,
+				Deleted_By = dr["Deleted_By"]?.ToString()!,
+				Status = dr["Status"]?.ToString()!,
+				StatusName = dr["StatusName"]?.ToString()!
+			};
+		}
 
-                        result.Add(item);
-                    }
-                }
-                else
-                {
-                    var item = new animalresult();
-                    item.Id = "";
-                    item.Animal_ID_Number = "";
-                    item.Animal_Name = "";
-                    item.Photo = "";
-                    item.Herd_Code = "";
-                    item.RFID_Number = "";
-                    item.Date_of_Birth = "";
-                    item.Sex = "";
-                    item.Birth_Type = "";
-                    item.Country_Of_Birth = "";
-                    item.Origin_Of_Acquisition = "";
-                    item.Date_Of_Acquisition = "";
-                    item.Marking = "";
-                    item.Type_Of_Ownership = "";
-                    item.Delete_Flag = "";
-                    item.BreedRegistryNumber = "";
-                    item.Breed_Code = "";
-                    item.Blood_Code = "";
-                    item.Restored_By = "";
-                    item.Date_Restored = "";
-                    item.Date_Deleted = "";
-                    item.Update_Date = "";
-                    item.Updated_By = "";
-                    item.Created_Date = "";
-                    item.Created_By = "";
-                    item.Deleted_By = "";
-                    item.Delete_Flag = "";
-                    item.Status = "";
-                    item.StatusName = "";
-
-
-                    result.Add(item);
-                }
-            }
-            else
-            {
-                sql = $@"SELECT        A_Buff_Animal.id, A_Buff_Animal.Animal_ID_Number, A_Buff_Animal.Animal_Name, A_Buff_Animal.Photo, A_Buff_Animal.Herd_Code, A_Buff_Animal.RFID_Number, A_Buff_Animal.Date_of_Birth, A_Buff_Animal.Sex, 
-                         A_Buff_Animal.Birth_Type, A_Buff_Animal.Country_Of_Birth, A_Buff_Animal.Origin_Of_Acquisition, A_Buff_Animal.Date_Of_Acquisition, A_Buff_Animal.Marking, A_Buff_Animal.Type_Of_Ownership, A_Buff_Animal.Delete_Flag, 
-                         A_Buff_Animal.Status, A_Buff_Animal.Created_By, A_Buff_Animal.Created_Date, A_Buff_Animal.Updated_By, A_Buff_Animal.Update_Date, A_Buff_Animal.Date_Deleted, A_Buff_Animal.Deleted_By, 
-                         A_Buff_Animal.Date_Restored, A_Buff_Animal.Restored_By, A_Buff_Animal.BreedRegistryNumber, A_Breed.Breed_Code, A_Blood_Comp.Blood_Code, tbl_StatusModel.Status AS StatusName
-                         FROM            A_Buff_Animal INNER JOIN
-                                                 A_Breed ON A_Buff_Animal.Breed_Code = CAST(A_Breed.Id AS VARCHAR(255))     inner JOIN
-                                                 A_Blood_Comp ON  A_Buff_Animal.Blood_Code = CAST(A_Blood_Comp.Id AS VARCHAR(255)) inner JOIN
-                                                 tbl_StatusModel ON A_Buff_Animal.Status = tbl_StatusModel.id
-                         WHERE        (A_Buff_Animal.Delete_Flag <> 1)";
-                DataTable table = db.SelectDb(sql).Tables[0];
-
-                foreach (DataRow dr in table.Rows)
-                {
-                    var item = new animalresult();
-                    item.Id = dr["Id"].ToString();
-                    item.Animal_ID_Number = dr["Animal_ID_Number"].ToString();
-                    item.Animal_Name = dr["Animal_Name"].ToString();
-                    item.Photo = dr["Photo"].ToString();
-                    item.Herd_Code = dr["Herd_Code"].ToString();
-                    item.RFID_Number = dr["RFID_Number"].ToString();
-                    item.Date_of_Birth = dr["Date_of_Birth"].ToString();
-                    item.Sex = dr["Sex"].ToString();
-                    item.Birth_Type = dr["Birth_Type"].ToString();
-                    item.Country_Of_Birth = dr["Country_Of_Birth"].ToString();
-                    item.Origin_Of_Acquisition = dr["Origin_Of_Acquisition"].ToString();
-                    item.Date_Of_Acquisition = dr["Date_Of_Acquisition"].ToString();
-                    item.Marking = dr["Marking"].ToString();
-                    item.Type_Of_Ownership = dr["Type_Of_Ownership"].ToString();
-                    item.Delete_Flag = dr["Delete_Flag"].ToString();
-                    item.BreedRegistryNumber = dr["BreedRegistryNumber"].ToString();
-                    item.Breed_Code = dr["Breed_Code"].ToString();
-                    item.Blood_Code = dr["Blood_Code"].ToString();
-                    item.Restored_By = dr["Restored_By"].ToString();
-                    item.Date_Restored = dr["Date_Restored"].ToString();
-                    item.Date_Deleted = dr["Date_Deleted"].ToString();
-                    item.Update_Date = dr["Update_Date"].ToString();
-                    item.Updated_By = dr["Updated_By"].ToString();
-                    item.Created_Date = dr["Created_Date"].ToString();
-                    item.Created_By = dr["Created_By"].ToString();
-                    item.Deleted_By = dr["Deleted_By"].ToString();
-                    item.Delete_Flag = dr["Delete_Flag"].ToString();
-                    item.Status = dr["Status"].ToString();
-                    item.StatusName = dr["StatusName"].ToString();
-
-
-                    result.Add(item);
-                }
-            }
-
-            return result;
-        }
-        public List<TblCenterModel> getcenterlist()
+		public List<TblCenterModel> getcenterlist()
         {
 
 
@@ -939,170 +800,154 @@ FROM            tbl_UserTypeModel INNER JOIN
             }
             return result;
         }
-        public List<TblUsersModel_List> getUserList_list(String username, String password)
-        {
-       //     string sqls = $@"SELECT     tbl_UsersModel.Id, tbl_UsersModel.Username, tbl_UsersModel.Password, tbl_UsersModel.Fullname, tbl_UsersModel.Fname, tbl_UsersModel.Lname, tbl_UsersModel.Mname, tbl_UsersModel.Email, 
-       //                  tbl_UsersModel.Gender, tbl_UsersModel.EmployeeID, tbl_UsersModel.JWToken, tbl_UsersModel.FilePath, tbl_UsersModel.Active, tbl_UsersModel.Cno, tbl_UsersModel.Address, tbl_UsersModel.Status, 
-       //                  tbl_UsersModel.Date_Created, tbl_UsersModel.Date_Updated, tbl_UsersModel.Delete_Flag, tbl_UsersModel.Created_By, tbl_UsersModel.Updated_By, tbl_UsersModel.Date_Deleted, tbl_UsersModel.Deleted_By, 
-       //                  tbl_UsersModel.Date_Restored, tbl_UsersModel.Restored_By, tbl_UsersModel.CenterId, tbl_UsersModel.AgreementStatus, tbl_UsersModel.RememberToken, tbl_UsersModel.UserType, tbl_UserTypeModel.code, 
-       //                  tbl_UserTypeModel.name, tbl_StatusModel.Status AS StatusName, tbl_CenterModel.CenterName, tbl_UserTypeModel.userAccesasId, tbl_UsersModel.isFarmer, tbl_UsersModel.HerdId
-       //                 FROM            tbl_UsersModel INNER JOIN
-       //                  tbl_UserTypeModel ON tbl_UsersModel.UserType = tbl_UserTypeModel.id INNER JOIN
-       //                  tbl_StatusModel ON tbl_UsersModel.Status = tbl_StatusModel.id INNER JOIN
-       //                  tbl_CenterModel ON tbl_UsersModel.CenterId = tbl_CenterModel.id
-       //                 WHERE        (tbl_UsersModel.Delete_Flag = 0) and tbl_UsersModel.Username ='" + username + "' and tbl_UsersModel.Password='" + Cryptography.Encrypt(password) + "'";
-
-       //     string sqls2 = $@"SELECT     tbl_UsersModel.Id, tbl_UsersModel.Username, tbl_UsersModel.Password, tbl_UsersModel.Fullname, tbl_UsersModel.Fname, tbl_UsersModel.Lname, tbl_UsersModel.Mname, tbl_UsersModel.Email, 
-       //                  tbl_UsersModel.Gender, tbl_UsersModel.EmployeeID, tbl_UsersModel.JWToken, tbl_UsersModel.FilePath, tbl_UsersModel.Active, tbl_UsersModel.Cno, tbl_UsersModel.Address, tbl_UsersModel.Status, 
-       //                  tbl_UsersModel.Date_Created, tbl_UsersModel.Date_Updated, tbl_UsersModel.Delete_Flag, tbl_UsersModel.Created_By, tbl_UsersModel.Updated_By, tbl_UsersModel.Date_Deleted, tbl_UsersModel.Deleted_By, 
-       //                  tbl_UsersModel.Date_Restored, tbl_UsersModel.Restored_By, tbl_UsersModel.CenterId, tbl_UsersModel.AgreementStatus, tbl_UsersModel.RememberToken, tbl_UsersModel.UserType, tbl_UserTypeModel.code, 
-       //                  tbl_UserTypeModel.name, tbl_StatusModel.Status AS StatusName, tbl_UserTypeModel.userAccesasId, tbl_UsersModel.isFarmer, tbl_UsersModel.HerdId
-       //                 FROM            tbl_UsersModel INNER JOIN
-       //                  tbl_UserTypeModel ON tbl_UsersModel.UserType = tbl_UserTypeModel.id INNER JOIN
-       //                  tbl_StatusModel ON tbl_UsersModel.Status = tbl_StatusModel.id 
-						 //WHERE tbl_UsersModel.Delete_Flag = 0 AND tbl_UsersModel.CenterId = 0 and tbl_UsersModel.Username ='" + username + "' and tbl_UsersModel.Password='" + Cryptography.Encrypt(password) + "'";
-
-            string sql1 = $@"SELECT     Tbl_Farmers.Id AS FarmerId, tbl_UsersModel.Id, tbl_UsersModel.Username, tbl_UsersModel.Password, tbl_UsersModel.Fullname, tbl_UsersModel.Fname, tbl_UsersModel.Lname, tbl_UsersModel.Mname, tbl_UsersModel.Email, 
-                         tbl_UsersModel.Gender, tbl_UsersModel.EmployeeID, tbl_UsersModel.JWToken, tbl_UsersModel.FilePath, tbl_UsersModel.Active, tbl_UsersModel.Cno, tbl_UsersModel.Address, tbl_UsersModel.Status, 
-                         tbl_UsersModel.Date_Created, tbl_UsersModel.Date_Updated, tbl_UsersModel.Delete_Flag, tbl_UsersModel.Created_By, tbl_UsersModel.Updated_By, tbl_UsersModel.Date_Deleted, tbl_UsersModel.Deleted_By, 
-                         tbl_UsersModel.Date_Restored, tbl_UsersModel.Restored_By, tbl_UsersModel.CenterId, tbl_UsersModel.AgreementStatus, tbl_UsersModel.RememberToken, tbl_UsersModel.UserType, tbl_UserTypeModel.code, 
-                         tbl_UserTypeModel.name, tbl_StatusModel.Status AS StatusName, tbl_CenterModel.CenterName, tbl_UserTypeModel.userAccesasId, tbl_UsersModel.isFarmer, tbl_UsersModel.HerdId, H_Buff_Herd.Herd_Code
-                        FROM            tbl_UsersModel INNER JOIN
-                         tbl_UserTypeModel ON tbl_UsersModel.UserType = tbl_UserTypeModel.id LEFT JOIN
-                         tbl_StatusModel ON tbl_UsersModel.Status = tbl_StatusModel.id LEFT JOIN
-                         tbl_CenterModel ON tbl_UsersModel.CenterId = tbl_CenterModel.id LEFT JOIN
-						 Tbl_Farmers ON tbl_UsersModel.Id = Tbl_Farmers.User_Id LEFT JOIN
-						 H_Buff_Herd ON tbl_UsersModel.HerdId = H_Buff_Herd.id
-                        WHERE tbl_UsersModel.Delete_Flag = 0 AND tbl_UsersModel.Username = '" + username + "' and tbl_UsersModel.Password = '" + Cryptography.Encrypt(password) + "'";
-
-            var result = new List<TblUsersModel_List>();
-            //DataTable table = db.SelectDb(sqls).Tables[0];
-            //DataTable table = new DataTable();
-
-            //DataTable userInfo = db.SelectDb(sqls2).Tables[0];
-            //if (userInfo.Rows.Count != 0)
-            //{
-            //    table = userInfo;
-            //}
-            //else
-            //{
-            //    table = db.SelectDb(sqls).Tables[0];
-            //}
-
-            DataTable table = db.SelectDb(sql1).Tables[0];
-
-            foreach (DataRow dr in table.Rows)
-            {
-                //string herdCodeQuery = $@"SELECT Herd_Code FROM H_Buff_Herd WHERE id = '" + dr["HerdId"].ToString() + "' ;";
-                //DataTable userHerdCode= db.SelectDb(herdCodeQuery).Tables[0];
-                
-                var item = new TblUsersModel_List();
-                item.FarmerId = (dr["FarmerId"].ToString());
-                item.Id = int.Parse(dr["Id"].ToString());
-                item.Fullname = dr["Fullname"].ToString();
-                item.Fname = dr["Fname"].ToString();
-                item.Lname = dr["Lname"].ToString();
-                item.Mname = dr["Mname"].ToString();
-                item.Email = dr["Email"].ToString();
-                item.Gender = dr["Gender"].ToString();
-                item.EmployeeId = dr["EmployeeID"].ToString();
-                item.Jwtoken = dr["JWToken"].ToString();
-                item.FilePath = dr["FilePath"].ToString();
-                item.Active = int.Parse(dr["Active"].ToString());
-                item.Cno = dr["Cno"].ToString();
-                item.Address = dr["Address"].ToString();
-                item.Status = int.Parse(dr["Status"].ToString());
-                item.DateCreated = dr["Date_Created"].ToString();
-                item.DateUpdated = dr["Date_Updated"].ToString();
-                item.DeleteFlag = Convert.ToBoolean(dr["Delete_Flag"].ToString());
-                item.CreatedBy = dr["Created_By"].ToString();
-                item.UpdatedBy = dr["Updated_By"].ToString();
-                item.DateDeleted = dr["Date_Deleted"].ToString();
-                item.CreatedBy = dr["Created_By"].ToString();
-                item.UpdatedBy = dr["Updated_By"].ToString();
-                item.DateDeleted = dr["Date_Deleted"].ToString();
-                item.DeletedBy = dr["Deleted_By"].ToString();
-                item.DateRestored = dr["Date_Restored"].ToString();
-                item.RestoredBy = dr["Restored_By"].ToString();
-                item.CenterId = int.Parse(dr["CenterId"].ToString());
-                //item.CenterName = dr["CenterName"].ToString();
-                item.CenterName = item.CenterId == 0 ? "ALL CENTER" : dr["CenterName"].ToString();
-                item.AgreementStatus = bool.Parse(dr["AgreementStatus"].ToString());
-                item.RememberToken = dr["RememberToken"].ToString();
-                item.UserType = dr["UserType"].ToString();
-                item.UserTypeCode = dr["code"].ToString();
-                item.UserTypeName = dr["name"].ToString();
-                item.StatusName = dr["StatusName"].ToString();
-                item.UserAccessId = dr["userAccesasId"].ToString();
-                item.isFarmer = (bool)dr["isFarmer"];
-                item.HerdId = string.IsNullOrEmpty(dr["HerdId"].ToString()) ? "0" : dr["HerdId"].ToString();
-                item.HerdCode = string.IsNullOrEmpty(dr["Herd_Code"].ToString()) ? "0" : dr["Herd_Code"].ToString();
-                
-                //if (userHerdCode.Rows.Count > 0)
-                //{
-                //    item.HerdCode = userHerdCode.Rows[0]["Herd_Code"].ToString();
-                //}
-                //else
-                //{
-                //    item.HerdCode= "0";
-                //}
 
 
-                string sql = $@"SELECT [Id]
-                      ,Name as UserType,userAccesasId
-                  FROM [dbo].[tbl_UserTypeModel] where Id ='" + dr["UserType"].ToString() + "'";
-                var results = new List<UserTypeAction_Model>();
-                DataTable tables = db.SelectDb(sql).Tables[0];
+		public List<TblUsersModel_List> GetUserList_All(String username, String password)
+		{
+			//var decryptedPassword = Cryptography.Decrypt(password);
+			var encryptedPassword = Cryptography.Encrypt(password);
+            
 
-                foreach (DataRow dr1 in tables.Rows)
-                {
-                    var r_item = new UserTypeAction_Model();
-                    r_item.UserTypeId = dr1["Id"].ToString();
-                    r_item.UserType = dr1["UserType"].ToString();
-                    r_item.userAccesasId = dr1["userAccesasId"].ToString();
-                    string sql_usertype = $@"SELECT        User_ModuleTable.Id as ModuleId,User_UserTypeAccessTable.UserTypeId, User_ModuleTable.Module, User_ModuleTable.ParentModule,User_UserTypeAccessTable.DateCreated
-                                        FROM            User_UserTypeAccessTable INNER JOIN
-                                                                 User_ModuleTable ON User_UserTypeAccessTable.Module = User_ModuleTable.Id  where User_UserTypeAccessTable.UserTypeId ='" + dr1["Id"].ToString() + "' ";
-                    DataTable tbl_usertype = db.SelectDb(sql_usertype).Tables[0];
-                    var usertype_item = new List<Module_Model>();
-                    foreach (DataRow drw in tbl_usertype.Rows)
-                    {
-                        var item1 = new Module_Model();
-                        item1.ModuleId = drw["ModuleId"].ToString();
-                        item1.ModuleName = drw["Module"].ToString();
-                        item1.ParentModule = drw["ParentModule"].ToString();
-                        item1.DateCreated = drw["DateCreated"].ToString();
+			string query = @"SELECT U.*, F.Id AS FarmerId, UT.code, UT.name, UT.userAccesasId, 
+                S.Status AS StatusName, C.CenterName, H.Herd_Code
+                FROM tbl_UsersModel U
+                INNER JOIN tbl_UserTypeModel UT ON U.UserType = UT.Id
+                LEFT JOIN tbl_StatusModel S ON U.Status = S.Id
+                LEFT JOIN tbl_CenterModel C ON U.CenterId = C.Id
+                LEFT JOIN Tbl_Farmers F ON U.Id = F.User_Id
+                LEFT JOIN H_Buff_Herd H ON U.HerdId = H.Id
+                WHERE U.Delete_Flag = 0 AND U.Username = @Username AND U.Password = @Password";
 
-                        string sql_actions = $@"SELECT  [Id]
-                                      ,[ActionId]
-									  ,Action_tbl.Action_name
-                                      ,[DateCreated]
-                                  FROM [PCC_DEV].[dbo].[User_ActionTable]
-								  inner join Action_tbl on Action_tbl.Action_Id = User_ActionTable.ActionId where Module ='" + drw["ModuleId"].ToString() + "'";
-                        DataTable action_tbl = db.SelectDb(sql_actions).Tables[0];
-                        var action_item = new List<ActionModel>();
-                        foreach (DataRow dra in action_tbl.Rows)
-                        {
-                            var items = new ActionModel();
-                            items.ActionId = dra["ActionId"].ToString();
-                            items.Actions = dra["Action_name"].ToString();
-                            action_item.Add(items);
+			var parameters = new[]
+			{
+				new SqlParameter("@Username", username),
+				new SqlParameter("@Password", encryptedPassword)
+			};
 
-                        }
-                        item1.Actions = action_item;
-                        usertype_item.Add(item1);
+			var result = new List<TblUsersModel_List>();
+			DataTable table = db.SelectDb(query, parameters).Tables[0];
 
-                    }
-                    r_item.Module = usertype_item;
+			foreach (DataRow dr in table.Rows)
+			{
+				var user = MapUser(dr);
+				user.userAccessModels = GetUserAccess(user.UserType);
+				result.Add(user);
+			}
 
-                    results.Add(r_item);
-                }
-                item.userAccessModels = results;
-                result.Add(item);
-            }
-            return result;
-        }
-        public StatusReturns GetUserLogIn(string username, string password, string? ipaddress, string? location)
+			return result;
+		}
+
+		private TblUsersModel_List MapUser(DataRow dr)
+		{
+			return new TblUsersModel_List
+			{
+				Id = Convert.ToInt32(dr["Id"]),
+				FarmerId = dr["FarmerId"]?.ToString()!,
+				Fullname = dr["Fullname"].ToString()!,
+				Fname = dr["Fname"].ToString()!,
+				Lname = dr["Lname"].ToString()!,
+				Mname = dr["Mname"].ToString()!,
+				Email = dr["Email"].ToString()!,
+				Gender = dr["Gender"].ToString()!,
+				EmployeeId = dr["EmployeeID"].ToString()!,
+				Jwtoken = dr["JWToken"].ToString()!,
+				FilePath = dr["FilePath"].ToString()!,
+				Active = Convert.ToInt32(dr["Active"]),
+				Cno = dr["Cno"].ToString()!,
+				Address = dr["Address"].ToString()!,
+				Status = Convert.ToInt32(dr["Status"]),
+				DateCreated = dr["Date_Created"].ToString(),
+				DateUpdated = dr["Date_Updated"].ToString(),
+				DeleteFlag = Convert.ToBoolean(dr["Delete_Flag"]),
+				CreatedBy = dr["Created_By"].ToString()!,
+				UpdatedBy = dr["Updated_By"].ToString()!,
+				DateDeleted = dr["Date_Deleted"].ToString(),
+				DeletedBy = dr["Deleted_By"].ToString()!,
+				DateRestored = dr["Date_Restored"].ToString(),
+				RestoredBy = dr["Restored_By"].ToString()!,
+				CenterId = Convert.ToInt32(dr["CenterId"]),
+				CenterName = string.IsNullOrEmpty(dr["CenterId"].ToString()) ? "ALL CENTER" : dr["CenterName"].ToString()!,
+				AgreementStatus = Convert.ToBoolean(dr["AgreementStatus"]),
+				RememberToken = dr["RememberToken"].ToString()!,
+				UserType = dr["UserType"].ToString()!,
+				UserTypeCode = dr["code"].ToString()!,
+				UserTypeName = dr["name"].ToString()!,
+				StatusName = dr["StatusName"].ToString(),
+				UserAccessId = dr["userAccesasId"].ToString()!,
+				isFarmer = Convert.ToBoolean(dr["isFarmer"]),
+				HerdId = string.IsNullOrEmpty(dr["HerdId"].ToString()) ? "0" : dr["HerdId"].ToString()!,
+				HerdCode = string.IsNullOrEmpty(dr["Herd_Code"].ToString()) ? "0" : dr["Herd_Code"].ToString()!
+			};
+		}
+
+		private List<UserTypeAction_Model> GetUserAccess(string userTypeId)
+		{
+			var result = new List<UserTypeAction_Model>();
+
+			string userTypeQuery = @"SELECT Id, Name AS UserType, userAccesasId FROM tbl_UserTypeModel WHERE Id = @Id";
+			var userTypeParams = new[] { new SqlParameter("@Id", userTypeId) };
+			var userTypeTable = db.SelectDb(userTypeQuery, userTypeParams).Tables[0];
+
+			foreach (DataRow row in userTypeTable.Rows)
+			{
+				var access = new UserTypeAction_Model
+				{
+					UserTypeId = row["Id"].ToString(),
+					UserType = row["UserType"].ToString(),
+					userAccesasId = row["userAccesasId"].ToString(),
+					Module = GetModulesWithActions(row["Id"].ToString()!)
+				};
+
+				result.Add(access);
+			}
+
+			return result;
+		}
+
+		private List<Module_Model> GetModulesWithActions(string userTypeId)
+		{
+			var modules = new List<Module_Model>();
+
+			string query = @"SELECT M.Id AS ModuleId, M.Module, M.ParentModule, A.DateCreated
+                FROM User_UserTypeAccessTable A
+                JOIN User_ModuleTable M ON A.Module = M.Id
+                WHERE A.UserTypeId = @UserTypeId";
+
+			var parameters = new[] { new SqlParameter("@UserTypeId", userTypeId) };
+			var table = db.SelectDb(query, parameters).Tables[0];
+
+			foreach (DataRow dr in table.Rows)
+			{
+                var module = new Module_Model();
+                module.ModuleId = dr["ModuleId"].ToString();
+                module.ModuleName = dr["Module"].ToString();
+                module.ParentModule = dr["ParentModule"].ToString();
+                module.DateCreated = dr["DateCreated"].ToString();
+
+				string queryUserActions = @"SELECT A.ActionId, B.Action_name
+                FROM User_ActionTable A
+                INNER JOIN Action_tbl B ON A.ActionId = B.Action_Id
+                WHERE A.Module ='" + dr["ModuleId"].ToString() + "'";
+
+				DataTable actiontable = db.SelectDb(queryUserActions).Tables[0];
+				var action_item = new List<ActionModel>();
+
+				foreach (DataRow obj in actiontable.Rows)
+				{
+					var items = new ActionModel();
+					items.ActionId = obj["ActionId"].ToString();
+					items.Actions = obj["Action_name"].ToString();
+					action_item.Add(items);
+				}
+				module.Actions = action_item;
+				modules.Add(module);
+			}
+
+			return modules;
+		}
+
+		
+		public StatusReturns GetUserLogIn(string username, string password, string? ipaddress, string? location)
         {
             var result = new List<TblUsersModel>();
             bool compr_user = false;

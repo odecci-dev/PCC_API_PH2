@@ -62,7 +62,45 @@ namespace API_PCC.Manager
             return ds;
         }
 
-        public DataTable SelectDb_WithParamAndSorting(string strSql, SortByModel sortByModel, params SqlParameter[] sqlParams)
+		public DataSet SelectDb(string value, params IDataParameter[] sqlParams)
+		{
+			DataSet ds = new DataSet();
+			try
+			{
+				ConnectioStr();
+				SQLConnOpen();
+				cmd.CommandTimeout = 0;
+				cmd.CommandText = value;
+				if (sqlParams != null)
+				{
+
+					foreach (IDataParameter para in sqlParams)
+					{
+						SqlParameter nameParam = new SqlParameter(para.ParameterName, para.Value);
+						cmd.Parameters.Add(nameParam);
+					}
+				}
+				da.SelectCommand = cmd;
+				da.Fill(ds);
+
+			}
+			catch (Exception e)
+			{
+				/*DataTable dt = new DataTable();
+                dt.Columns.Add("Error");
+                dt.Rows.Add(new object[] { e.Message });
+                ds.Tables.Add(dt);*/
+				conn.Close();
+				conn = null;
+				throw e;
+			}
+
+			conn.Close();
+			conn = null;
+			return ds;
+		}
+
+		public DataTable SelectDb_WithParamAndSorting(string strSql, SortByModel sortByModel, params SqlParameter[] sqlParams)
         {
             DataTable result = new DataTable();
             DataSet ds = new DataSet();
@@ -212,5 +250,21 @@ namespace API_PCC.Manager
                 return ex.Message + "!";
             }
         }
-    }
+
+		public async Task<string> DB_WithParamAsync(string query, params SqlParameter[] parameters)
+		{
+			ConnectioStr();
+
+			using (SqlConnection conn = new SqlConnection(cnnstr))
+			{
+				await conn.OpenAsync();
+				using (SqlCommand cmd = new SqlCommand(query, conn))
+				{
+					cmd.Parameters.AddRange(parameters); // Add parameters properly
+					int rowsAffected = await cmd.ExecuteNonQueryAsync();
+					return rowsAffected > 0 ? "Update successful" : "No rows updated";
+				}
+			}
+		}
+	}
 }
