@@ -1434,22 +1434,22 @@ namespace API_PCC.Controllers
             return sqlParameters.ToArray();
         }
 
-        private SqlParameter[] populateSqlParameters(String herdCode, String herdName)
+        private SqlParameter[] populateSqlParameters(String herdName, String herdCode)
         {
 
             var sqlParameters = new List<SqlParameter>();
 
-            sqlParameters.Add(new SqlParameter
+			sqlParameters.Add(new SqlParameter
+			{
+				ParameterName = "HerdName",
+				Value = herdName ?? Convert.DBNull,
+				SqlDbType = System.Data.SqlDbType.VarChar,
+			});
+
+			sqlParameters.Add(new SqlParameter
             {
                 ParameterName = "HerdCode",
                 Value = herdCode ?? Convert.DBNull,
-                SqlDbType = System.Data.SqlDbType.VarChar,
-            });
-
-            sqlParameters.Add(new SqlParameter
-            {
-                ParameterName = "HerdName",
-                Value = herdName ?? Convert.DBNull,
                 SqlDbType = System.Data.SqlDbType.VarChar,
             });
 
