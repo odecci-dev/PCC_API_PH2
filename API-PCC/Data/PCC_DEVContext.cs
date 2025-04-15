@@ -80,6 +80,17 @@ public partial class PCC_DEVContext : DbContext
    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<TransferModel>()
+            .HasOne(t => t.Animal)
+            .WithMany()  // If Animal has a collection, update this
+            .HasForeignKey(t => t.AnimalId)
+            .OnDelete(DeleteBehavior.Restrict); // Prevent cascading delete
+
+        modelBuilder.Entity<TransferModel>()
+            .HasOne(t => t.Owner)
+            .WithMany()
+            .HasForeignKey(t => t.OwnerId);
+
         modelBuilder.Entity<HBuffHerd>()
         .HasMany(e => e.buffaloType)
         .WithMany(e => e.buffHerd)

@@ -407,7 +407,7 @@ namespace API_PCC.Controllers
             string refno = Uri.UnescapeDataString(referenceNumber);
             dbmet.insertlgos(filePath, JsonSerializer.Serialize(referenceNumber));
             var buffAnimal = _context.ABuffAnimals.Where(animal =>
-                        !animal.DeleteFlag && (animal.FarmerId.Equals(refno) || animal.FarmerId.Equals(int.Parse(refno))))
+                        !animal.DeleteFlag && (animal.AnimalIdNumber.Equals(refno)))
                         .FirstOrDefault();
             if (buffAnimal == null)
             {
@@ -1265,17 +1265,17 @@ namespace API_PCC.Controllers
             {
 
                 var buffHerds = _context.HBuffHerds;
-                var farmOwners = _context.Tbl_Farmers;
+                var farmOwners = _context.Tbl_Farmers.Where(a => a.Id == buffAnimal.FarmerId).FirstOrDefault() ;
 
-                var ownerDetails = buffHerds
-                                    .Where(herd => herd.HerdCode.Equals(buffAnimal.HerdCode))
-                                    .Join(farmOwners, herd => herd.Owner, owner => owner.Id,
-                                    (herd, owner) => new { Id = owner.Id, FirstName = owner.FirstName, LastName = owner.LastName });
+                //var ownerDetails = buffHerds
+                //                    .Where(herd => herd.HerdCode.Equals(buffAnimal.HerdCode))
+                //                    .Join(farmOwners, herd => herd.Owner, owner => owner.Id,
+                //                    (herd, owner) => new { Id = owner.Id, FirstName = owner.FirstName, LastName = owner.LastName });
                 string ownerName = "N/A";
 
-                if (ownerDetails.Count() > 0)
+                if (farmOwners != null)
                 {
-                    ownerName = ownerDetails.First().FirstName + "" + ownerDetails.First().LastName;
+                    ownerName = farmOwners.LastName + " " + farmOwners.FirstName;
                 }
 
                 var buffAnimalResponseModel = new BuffAnimalListResponseModel()

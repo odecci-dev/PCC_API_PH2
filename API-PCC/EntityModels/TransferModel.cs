@@ -1,5 +1,6 @@
 ﻿using API_PCC.ApplicationModels;
 using API_PCC.Models;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Security.Policy;
 
 namespace API_PCC.EntityModels
@@ -8,10 +9,13 @@ namespace API_PCC.EntityModels
     {
         public int Id { get; set; }
         public string transferNumber { get; set; }
+        [ForeignKey("Animal")]
         public int AnimalId { get; set; }
+
+        [ForeignKey("Owner")]
         public int OwnerId { get; set; }
         public virtual ABuffAnimal Animal { get; set; }
-        public virtual TblFarmOwner Owner { get; set; }
+        public virtual TblFarmers Owner { get; set; }
         public string Address { get; set; }
         public string TelephoneNumber { get; set; }
         public string MobileNumber { get; set; }

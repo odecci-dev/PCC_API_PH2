@@ -277,7 +277,7 @@ namespace API_PCC.Controllers
                 return Conflict("No animal found for registry number: " + transferUpdateModel.BreedRegistrationNumber + " and animal Id number: " + transferUpdateModel.AnimalIdNumber);
             }
 
-            var farmOwner = _context.TblFarmOwners.Where(owner => (owner.FirstName + " " + owner.LastName).Equals(transferUpdateModel.Owner)).FirstOrDefault();
+            var farmOwner = _context.Tbl_Farmers.Where(owner => (owner.FirstName + " " + owner.LastName).Equals(transferUpdateModel.Owner)).FirstOrDefault();
 
             if (farmOwner == null)
             {
@@ -334,7 +334,7 @@ namespace API_PCC.Controllers
                 return Conflict("No animal found for registry number: " + transferSaveModel.BreedRegistrationNumber + " and animal Id number: " + transferSaveModel.AnimalIdNumber);
             }
 
-            var farmOwner = _context.TblFarmOwners.Where(owner => (owner.FirstName + " " + owner.LastName).Equals(transferSaveModel.Owner)).FirstOrDefault();
+            var farmOwner = _context.Tbl_Farmers.Where(owner => (owner.FirstName + " " + owner.LastName).Equals(transferSaveModel.Owner)).FirstOrDefault();
 
             if (farmOwner == null)
             {
@@ -397,7 +397,7 @@ namespace API_PCC.Controllers
                         return Conflict("No animal found for registry number: " + transferSaveModel[x].BreedRegistrationNumber + " and animal Id number: " + transferSaveModel[x].AnimalIdNumber);
                     }
 
-                    var farmOwner = _context.TblFarmOwners.Where(owner => (owner.FirstName + " " + owner.LastName).Equals(transferSaveModel[x].Owner)).FirstOrDefault();
+                    var farmOwner = _context.Tbl_Farmers.Where(owner => (owner.FirstName + " " + owner.LastName).Equals(transferSaveModel[x].Owner)).FirstOrDefault();
 
                     if (farmOwner == null)
                     {
@@ -535,15 +535,14 @@ namespace API_PCC.Controllers
 
         private IQueryable<TransferModel> buildTransferModelSearchQuery(CommonSearchFilterModel searchFilter)
         {
-            IQueryable<TransferModel> query = _context.TransferModels;
+            IQueryable<TransferModel> query = _context.TransferModels
+                                    .Include(t => t.Animal)
+                                    .Include(t => t.Owner);
 
-            query = query
-                .Include(transferModel => transferModel.Animal)
-                .Include(transferModel => transferModel.Owner);
-
-            if (!searchFilter.searchParam.IsNullOrEmpty())
+            if (!string.IsNullOrWhiteSpace(searchFilter.searchParam))
             {
-                query = query.Where(transferModel => transferModel.transferNumber.Equals(searchFilter.searchParam));
+                query = query.Where(t => t.transferNumber != null &&
+                                         t.transferNumber.Equals(searchFilter.searchParam, StringComparison.OrdinalIgnoreCase));
             }
 
             return query;

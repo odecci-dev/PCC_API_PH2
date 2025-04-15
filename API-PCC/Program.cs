@@ -22,7 +22,7 @@ builder.Services.Configure<List<EmailSettings>>(emailSettingsSection);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-
+builder.Configuration.AddJsonFile("appconfig.json", optional: true, reloadOnChange: true);
 
 builder.Services.AddSwaggerGen(s =>
 {
