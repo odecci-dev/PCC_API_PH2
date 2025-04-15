@@ -989,7 +989,7 @@ namespace API_PCC.Controllers
             DataTable buffHerdDuplicateCheck = db.SelectDb_WithParamAndSorting(QueryBuilder.buildHerdSelectDuplicateQueryByIdHerdNameHerdCode(), null, populateSqlParameters(id, registrationModel));
 
             // check for duplication
-            if (buffHerdDuplicateCheck.Rows.Count > 0)
+            if (buffHerdDuplicateCheck.Rows.Count > 1)
             {
                 status = "Entity already exists";
                 return Conflict(status);
@@ -1131,6 +1131,10 @@ namespace API_PCC.Controllers
             if (updateModel.GroupId != null && updateModel.GroupId != null)
             {
                 buffHerd.GroupId = updateModel.GroupId;
+            }
+            if (updateModel.UpdatedBy != null && updateModel.UpdatedBy != "")
+            {
+                buffHerd.UpdatedBy = updateModel.UpdatedBy;
             }
             return buffHerd;
         }
