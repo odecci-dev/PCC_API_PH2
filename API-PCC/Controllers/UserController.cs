@@ -254,7 +254,7 @@ namespace API_PCC.Controllers
                 return Problem("Entity set 'PCC_DEVContext.TblUsersModels' is null!");
             }
 
-            var userInfo = dbmet.getUserList_list(username, password).FirstOrDefault();
+            var userInfo = dbmet.GetUserList_All(username, password).FirstOrDefault();
 
             if (userInfo == null)
             {
