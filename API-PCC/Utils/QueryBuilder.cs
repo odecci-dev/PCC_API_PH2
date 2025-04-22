@@ -130,48 +130,94 @@ namespace API_PCC.Utils
 
         public static string buildFarmerSearch(FarmerSearchFilterModel searchFilterModel)
         {
-            string farmerSelect = Constants.DBQuery.HERDFARMERS_SELECT;
-            string joins = @$"LEFT JOIN tbl_HerdFarmer hf ON f.Id = hf.Farmer_Id
-                                LEFT JOIN H_Buff_Herd bh ON hf.Herd_Id = bh.id
-                                LEFT JOIN tbl_UsersModel u ON f.User_Id = u.Id";
-            string whereClause = "WHERE f.Is_Deleted = 0 ";
 
+			string farmerSelect = Constants.DBQuery.HERDFARMERS_SELECT;
 
-            if (searchFilterModel.center.HasValue && searchFilterModel.center != 0)
-            {
-                whereClause += " AND bh.Center = @CenterId";
-            }
+			string joins = @$"
+                    LEFT JOIN tbl_HerdFarmer hf ON f.Id = hf.Farmer_Id
+                    LEFT JOIN H_Buff_Herd bh ON hf.Herd_Id = bh.id
+                    LEFT JOIN tbl_UsersModel u ON f.User_Id = u.Id";
 
-            if (searchFilterModel.herdId.HasValue && searchFilterModel.herdId != 0)
-            {
-                whereClause += " AND hf.Herd_Id = @HerdId";
-            }
+			string whereClause = "WHERE f.Is_Deleted = 0";
 
-            if (searchFilterModel.breedType != null && searchFilterModel.breedType.Any())
-            {
-                joins += @" LEFT JOIN tbl_FarmerBreedType 
-                    ON f.Id = tbl_FarmerBreedType.Farmer_Id";
+			if (searchFilterModel.center.HasValue && searchFilterModel.center != 0)
+			{
+				whereClause += " AND bh.Center = @CenterId";
+			}
 
-                var breedTypeParams = string.Join(", ", searchFilterModel.breedType.Select((_, i) => $"@BreedType{i}"));
-                whereClause += $" AND tbl_FarmerBreedType.BreedType_Id IN ({breedTypeParams})";
-            }
+			if (searchFilterModel.herdId.HasValue && searchFilterModel.herdId != 0)
+			{
+				whereClause += " AND hf.Herd_Id = @HerdId";
+			}
 
-            if (searchFilterModel.feedingSystem != null && searchFilterModel.feedingSystem.Any())
-            {
-                joins += @" LEFT JOIN tbl_FarmerFeedingSystem 
-                    ON f.Id = tbl_FarmerFeedingSystem.Farmer_Id";
+			if (searchFilterModel.breedType != null && searchFilterModel.breedType.Any())
+			{
+				joins += @"
+                LEFT JOIN tbl_FarmerBreedType fbt ON f.Id = fbt.Farmer_Id";
 
-                var feedingSystemParams = string.Join(", ", searchFilterModel.feedingSystem.Select((_, i) => $"@FeedingSystem{i}"));
-                whereClause += $" AND tbl_FarmerFeedingSystem.FeedingSystem_Id IN ({feedingSystemParams})";
-            }
+				var breedTypeParams = string.Join(", ", searchFilterModel.breedType.Select((_, i) => $"@BreedType{i}"));
+				whereClause += $" AND fbt.BreedType_Id IN ({breedTypeParams})";
+			}
 
-            if (!string.IsNullOrEmpty(searchFilterModel.searchValue))
-            {
-                whereClause += " AND (u.Fname LIKE '%' + @SearchParam + '%' OR u.Lname LIKE '%' + @SearchParam + '%')";
-            }
+			if (searchFilterModel.feedingSystem != null && searchFilterModel.feedingSystem.Any())
+			{
+				joins += @"
+                LEFT JOIN tbl_FarmerFeedingSystem ffs ON f.Id = ffs.Farmer_Id";
+
+				var feedingSystemParams = string.Join(", ", searchFilterModel.feedingSystem.Select((_, i) => $"@FeedingSystem{i}"));
+				whereClause += $" AND ffs.FeedingSystem_Id IN ({feedingSystemParams})";
+			}
+
+			if (!string.IsNullOrWhiteSpace(searchFilterModel.searchValue))
+			{
+				whereClause += " AND (u.Fname LIKE '%' + @SearchParam + '%' OR u.Lname LIKE '%' + @SearchParam + '%')";
+			}
 
             string finalQuery = $"{farmerSelect} {joins} {whereClause}";
             return finalQuery;
+
+            //string farmerSelect = Constants.DBQuery.HERDFARMERS_SELECT;
+            //string joins = @$"LEFT JOIN tbl_HerdFarmer hf ON f.Id = hf.Farmer_Id
+            //                    LEFT JOIN H_Buff_Herd bh ON hf.Herd_Id = bh.id
+            //                    LEFT JOIN tbl_UsersModel u ON f.User_Id = u.Id";
+            //string whereClause = "WHERE f.Is_Deleted = 0 ";
+
+
+            //if (searchFilterModel.center.HasValue && searchFilterModel.center != 0)
+            //{
+            //    whereClause += " AND bh.Center = @CenterId";
+            //}
+
+            //if (searchFilterModel.herdId.HasValue && searchFilterModel.herdId != 0)
+            //{
+            //    whereClause += " AND hf.Herd_Id = @HerdId";
+            //}
+
+            //if (searchFilterModel.breedType != null && searchFilterModel.breedType.Any())
+            //{
+            //    joins += @" LEFT JOIN tbl_FarmerBreedType 
+            //        ON f.Id = tbl_FarmerBreedType.Farmer_Id";
+
+            //    var breedTypeParams = string.Join(", ", searchFilterModel.breedType.Select((_, i) => $"@BreedType{i}"));
+            //    whereClause += $" AND tbl_FarmerBreedType.BreedType_Id IN ({breedTypeParams})";
+            //}
+
+            //if (searchFilterModel.feedingSystem != null && searchFilterModel.feedingSystem.Any())
+            //{
+            //    joins += @" LEFT JOIN tbl_FarmerFeedingSystem 
+            //        ON f.Id = tbl_FarmerFeedingSystem.Farmer_Id";
+
+            //    var feedingSystemParams = string.Join(", ", searchFilterModel.feedingSystem.Select((_, i) => $"@FeedingSystem{i}"));
+            //    whereClause += $" AND tbl_FarmerFeedingSystem.FeedingSystem_Id IN ({feedingSystemParams})";
+            //}
+
+            //if (!string.IsNullOrEmpty(searchFilterModel.searchValue))
+            //{
+            //    whereClause += " AND (u.Fname LIKE '%' + @SearchParam + '%' OR u.Lname LIKE '%' + @SearchParam + '%')";
+            //}
+
+            //string finalQuery = $"{farmerSelect} {joins} {whereClause}";
+            //return finalQuery;
         }
 
 
@@ -179,7 +225,7 @@ namespace API_PCC.Utils
 
 
 
-        public static String buildFarmOwnerSearchQueryById()
+		public static String buildFarmOwnerSearchQueryById()
         {
             return Constants.DBQuery.FARM_OWNER_SELECT + "WHERE id = @Id";
         }

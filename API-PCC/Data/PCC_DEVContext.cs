@@ -1073,47 +1073,26 @@ public partial class PCC_DEVContext : DbContext
 
         modelBuilder.Entity<TransferModel>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_tbl_Transfer");
-
-            entity.ToTable("tbl_TransferModel");
-
-            entity.Property(e => e.Address).IsUnicode(false);
-            entity.Property(e => e.CreatedBy)
-                .IsUnicode(false)
-                .HasColumnName("Created_By");
-            entity.Property(e => e.DateCreated)
-                .HasColumnType("date")
-                .HasColumnName("Date_Created");
-            entity.Property(e => e.DateDeleted)
-                .HasColumnType("date")
-                .HasColumnName("Date_Deleted");
-            entity.Property(e => e.DateRestored)
-                .HasColumnType("date")
-                .HasColumnName("Date_Restored");
-            entity.Property(e => e.DateUpdated)
-                .HasColumnType("date")
-                .HasColumnName("Date_Updated");
-            entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
-            entity.Property(e => e.DeletedBy)
-                .IsUnicode(false)
-                .HasColumnName("Deleted_By");
-            entity.Property(e => e.Email).IsUnicode(false);
-            entity.Property(e => e.MobileNumber)
-                .IsUnicode(false)
-                .HasColumnName("Mobile_Number");
-            entity.Property(e => e.RestoredBy)
-                .IsUnicode(false)
-                .HasColumnName("Restored_By");
-            entity.Property(e => e.TelephoneNumber)
-                .IsUnicode(false)
-                .HasColumnName("Telephone_Number");
-            entity.Property(e => e.TransferFile).HasColumnName("Transfer_File");
-            entity.Property(e => e.transferNumber)
-                .IsUnicode(false)
-                .HasColumnName("Transfer_Number");
-            entity.Property(e => e.UpdatedBy)
-                .IsUnicode(false)
-                .HasColumnName("Updated_By");
+			entity.ToTable("tbl_TransferModel");
+			entity.HasKey(e => e.Id).HasName("PK_tbl_Transfer");
+			entity.Property(e => e.transferNumber).IsUnicode(false).HasColumnName("Transfer_Number");
+			entity.Property(e => e.AnimalId).HasColumnName("Animal");
+			entity.Property(e => e.OwnerId).HasColumnName("Owner");
+			entity.Property(e => e.Address).IsUnicode(false);
+			entity.Property(e => e.TelephoneNumber).IsUnicode(false).HasColumnName("Telephone_Number");
+			entity.Property(e => e.MobileNumber).IsUnicode(false).HasColumnName("Mobile_Number");
+			entity.Property(e => e.Email).IsUnicode(false);
+			entity.Property(e => e.TransferFile).HasColumnName("Transfer_File");
+			entity.Property(e => e.CreatedBy).IsUnicode(false).HasColumnName("Created_By");
+            entity.Property(e => e.DateCreated).HasColumnType("date").HasColumnName("Date_Created");
+			entity.Property(e => e.UpdatedBy).IsUnicode(false).HasColumnName("Updated_By");
+			entity.Property(e => e.DateUpdated).HasColumnType("date").HasColumnName("Date_Updated");			
+			entity.Property(e => e.DeletedBy).IsUnicode(false).HasColumnName("Deleted_By");
+			entity.Property(e => e.DateDeleted).HasColumnType("date").HasColumnName("Date_Deleted");
+			entity.Property(e => e.RestoredBy).IsUnicode(false).HasColumnName("Restored_By");
+			entity.Property(e => e.DateRestored).HasColumnType("date").HasColumnName("Date_Restored");            
+			entity.Property(e => e.DeleteFlag).HasColumnName("Delete_Flag");
+			entity.Property(e => e.Status).HasColumnName("Status");			
         });
 
         modelBuilder.Entity<TblUserAccessModel>(entity =>

@@ -70,4 +70,6 @@ public partial class ABuffAnimal
     public double? Blood_Comp { get; set; }
     public int? FarmerId { get; set; }
     public int? GroupId { get; set; }
+
+
 }

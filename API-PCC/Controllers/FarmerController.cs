@@ -168,9 +168,72 @@ namespace API_PCC.Controllers
             }
         }
 
+		[HttpPost]
+		public async Task<ActionResult<FarmerView>> ViewArchive()
+		{
+			try
+			{
+				var archivedFarmers = await (from f in _context.Tbl_Farmers
+											 join hf in _context.TblHerdFarmers on f.Id equals hf.FarmerId into herdGroup
+											 from hg in herdGroup.DefaultIfEmpty()
+											 join bh in _context.HBuffHerds on hg.HerdId equals bh.Id into buffHerdGroup
+											 from bhg in buffHerdGroup.DefaultIfEmpty()
+											 where f.Is_Deleted == true
+											 select new
+											 {
+												 HerdId = hg.HerdId,
+												 HerdCode = bhg.HerdCode,
+												 Farmer = f
+											 }).ToListAsync();
 
+				if (archivedFarmers == null || !archivedFarmers.Any())
+				{
+					return NotFound("No archived farmers found.");
+				}
 
-        [HttpPost]
+				var farmerViews = new List<FarmerView>();
+
+				foreach (var farmerData in archivedFarmers)
+				{
+					var farmerId = farmerData.Farmer.Id;
+
+					var breedTypes = await _context.TblFarmerBreedTypes
+						.Where(b => b.FarmerId == farmerId)
+						.Select(b => b.BreedTypeId)
+						.Distinct()
+						.ToListAsync();
+
+					var feedingSystems = await _context.tbl_FarmerFeedingSystem
+						.Where(f => f.Farmer_Id == farmerId)
+						.Select(f => f.FeedingSystem_Id)
+						.Distinct()
+						.ToListAsync();
+
+					var farmerView = new FarmerView
+					{
+						FarmerId = farmerData.Farmer.Id,
+						UserId = farmerData.Farmer.User_Id,
+						Herd_Id = farmerData.HerdId ?? 0,
+						Herd_Code = farmerData.HerdCode,
+						FarmerAffiliation_Id = farmerData.Farmer.FarmerAffliation_Id,
+						FarmerClassification_Id = farmerData.Farmer.FarmerClassification_Id,
+						CowLevel = await _context.ABuffAnimals.CountAsync(buff => buff.FarmerId == farmerId),
+						FarmerBreedTypes = breedTypes,
+						FarmerFeedingSystems = feedingSystems
+					};
+
+					farmerViews.Add(farmerView);
+				}
+
+				return Ok(farmerViews);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.GetBaseException().ToString());
+			}
+		}
+
+		[HttpPost]
         public async Task<IActionResult> save(FarmerSaveInfoModel model)
         {
             int generatedFarmerId = 0;
@@ -824,6 +887,56 @@ namespace API_PCC.Controllers
         [HttpPost]
         public async Task<IActionResult> ArchiveMultiple(List<DeletionModel> deletionModelList)
         {
+            //if (_context.Tbl_Farmers == null)
+            //{
+            //	return Problem("Entity set 'PCC_DEVContext.Tbl_Farmers' is null!");
+            //}
+
+            //try
+            //{
+            //	var idsToDelete = deletionModelList.Select(d => d.id).ToList();
+
+            //	// Get all farmer records to update
+            //	var farmersToUpdate = await _context.Tbl_Farmers
+            //		.Where(f => idsToDelete.Contains(f.Id) && !f.Is_Deleted)
+            //		.ToListAsync();
+
+            //	if (farmersToUpdate.Count != idsToDelete.Count)
+            //	{
+            //		return Conflict("Some records are already deleted or not found.");
+            //	}
+
+            //	foreach (var farmer in farmersToUpdate)
+            //	{
+            //		var deletionModel = deletionModelList.FirstOrDefault(d => d.id == farmer.Id);
+            //		if (deletionModel == null) continue;
+
+            //		farmer.Is_Deleted = true;
+            //		farmer.Deleted_At = DateTime.Now;
+            //		farmer.Deleted_By = int.Parse(deletionModel.deletedBy);
+            //		farmer.Restored_At = null;
+            //		farmer.Restored_By = 0;
+
+            //		dbmet.InsertAuditTrailv2(
+            //			"Delete Farmer Details - Delete Successful!",
+            //			DateTime.Now.ToString("yyyy-MM-dd"),
+            //			"Farmer Module",
+            //			farmer.Deleted_By.ToString(),
+            //			"0",
+            //			farmer.Id.ToString());
+            //	}
+
+            //	await _context.SaveChangesAsync();
+
+            //	return Ok("Deletion Successful!");
+            //}
+            //catch (Exception ex)
+            //{
+            //	return Problem($"An error occurred: {ex.GetBaseException().Message}");
+            //}
+
+
+
             if (_context.Tbl_Farmers == null)
             {
                 return Problem("Entity set 'PCC_DEVContext.Tbl_Farmers' is null!");
@@ -845,17 +958,7 @@ namespace API_PCC.Controllers
                     return Conflict("Some records have no match or are already marked for deletion!");
                 }
 
-                //foreach (var tblCenterModel in recordsToDelete)
-                //{
-                //    bool centerNameExistsInBuffHerd = _context.HBuffHerds
-                //        .Any(buffHerd => !buffHerd.DeleteFlag && buffHerd.Center == tblCenterModel.Id);
-
-                //    if (centerNameExistsInBuffHerd)
-                //    {
-                //        return Conflict("One or more records are used by other tables!");
-                //    }
-                //}
-
+             
                 foreach (DeletionModel deletionModel in deletionModelList)
                 {
                     var tblFarmerModel = tblFarmerModels.FirstOrDefault(model => model.Id == deletionModel.id);
@@ -870,7 +973,7 @@ namespace API_PCC.Controllers
                     tblFarmerModel.Deleted_By = int.Parse(deletionModel.deletedBy);
                     tblFarmerModel.Restored_At = null;
                     tblFarmerModel.Restored_By = 0;
-                    _context.Entry(tblFarmerModel).State = EntityState.Modified;
+                    //_context.Entry(tblFarmerModel).State = EntityState.Modified;
 
                     status += "Delete Successful!";
                     dbmet.InsertAuditTrailv2("Delete Farmer Details" + " " + status, DateTime.Now.ToString("yyyy-MM-dd"), "Farmer Module", tblFarmerModel.Deleted_By.ToString(), "0", deletionModel.id.ToString());
@@ -885,6 +988,7 @@ namespace API_PCC.Controllers
             {
                 return Problem(ex.GetBaseException().ToString());
             }
+
         }
 
         [HttpPost]

@@ -9,6 +9,7 @@
         public List<string>? feedingSystem { get; set; }
         public int page { get; set; }
         public int pageSize { get; set; }
-    }
+		public SortByModel sortBy { get; set; }
+	}
 }
 

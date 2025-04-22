@@ -117,7 +117,8 @@ namespace API_PCC.Controllers
             public string Photo { get; set; }
             public string CreatedBy { get; set; }
             public string DateCreated { get; set; }
-            public string CowLevel { get; set; }
+			
+			public string CowLevel { get; set; }
             public string FarmManager { get; set; }
         }
 
@@ -133,7 +134,8 @@ namespace API_PCC.Controllers
             public string FarmAddress { get; set; }
             public string Photo { get; set; }
             public string CreatedBy { get; set; }
-            public string DateCreated { get; set; }
+			public bool DeleteFlag { get; set; }
+			public string DateCreated { get; set; }
             public string FarmerCount { get; set; }
             public string FarmManager { get; set; }
         }
@@ -250,6 +252,7 @@ namespace API_PCC.Controllers
                         Photo = herd.Photo,
                         CreatedBy = herd.CreatedBy,
                         DateCreated = herd.DateCreated.ToString(),
+                        DeleteFlag = herd.DeleteFlag,
                         Center = (int)herd.Center,
                         DateofApplication = herd.DateCreated,
                         FarmerCount = _context.TblHerdFarmers.Count(farmer => farmer.HerdId == herd.Id).ToString(),
@@ -262,7 +265,35 @@ namespace API_PCC.Controllers
                     }).Distinct().AsQueryable();
         }
 
-        private void validateDate(BuffHerdSearchFilterModel searchFilter)
+		private IQueryable<BreedRegistryHerd2> FarmerHerdArchiveList()
+		{
+			return (from herd in _context.HBuffHerds
+					join farmer in _context.Tbl_Farmers on herd.FarmerId equals farmer.Id
+					join farmerUser in _context.TblUsersModels on farmer.User_Id equals farmerUser.Id
+					
+					select new BreedRegistryHerd2
+					{
+						HerdId = herd.Id,
+						HerdCode = herd.HerdCode,
+						HerdName = herd.HerdName,
+						FarmAddress = herd.FarmAddress,
+						Photo = herd.Photo!,
+						CreatedBy = herd.CreatedBy,
+						DateCreated = herd.DateCreated.ToString(),
+						DeleteFlag = herd.DeleteFlag,
+						Center = (int)herd.Center!,
+						DateofApplication = herd.DateCreated,
+						FarmerCount = _context.TblHerdFarmers.Count(farmer => farmer.HerdId == herd.Id).ToString(),
+						FarmManager = farmer != null
+							 ? farmerUser.Lname + ", " + farmerUser.Fname
+							 : "Unknown Manager",
+						FarmerName = farmer != null
+							 ? farmerUser.Lname + ", " + farmerUser.Fname
+							 : "Unknown Manager",
+					}).Distinct().AsQueryable();
+		}
+
+		private void validateDate(BuffHerdSearchFilterModel searchFilter)
         {
 
             if (!searchFilter.dateFrom.IsNullOrEmpty())
@@ -296,7 +327,24 @@ namespace API_PCC.Controllers
             }
         }
 
-        [HttpPost]
+		[HttpPost]
+		public async Task<IActionResult> ViewArchive()
+		{
+            FarmerHerdSearch searchFilter = new FarmerHerdSearch();
+
+			try
+			{				
+				var farmerHerds = await buildfarmerherdArchive().Where(d => d.DeleteFlag == true).ToListAsync();
+				var result = FormList(searchFilter, farmerHerds);
+				return Ok(result);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.GetBaseException().ToString());
+			}
+		}
+
+		[HttpPost]
         public async Task<IActionResult> FarmerList(BreedRegistryHerdFarmerSearchFilterModel searchFilter)
         {
             var result = dbmet.FarmerListView();
@@ -834,19 +882,32 @@ namespace API_PCC.Controllers
             return query;
         }
 
-        private List<HerdFarmerPageModel> FormList(FarmerHerdSearch searchFilter, List<BreedRegistryHerd2> farmerherdlist)
+		private IQueryable<BreedRegistryHerd2> buildfarmerherdArchive()
+		{
+            //NBV
+            try
+            {
+                IQueryable<BreedRegistryHerd2> query = FarmerHerdArchiveList().AsQueryable();
+                query = query.OrderByDescending(herd => herd.HerdId);
+				return query;
+			}
+            catch (Exception ex)
+            {
+				return (IQueryable<BreedRegistryHerd2>)Problem(ex.GetBaseException().ToString());
+			}
+		}
+
+		private List<HerdFarmerPageModel> FormList(FarmerHerdSearch searchFilter, List<BreedRegistryHerd2> farmerherdlist)
         {
-
-
-            int pagesize = searchFilter.pageSize == 0 ? 10 : searchFilter.pageSize;
+			
+			int pagesize = searchFilter.pageSize == 0 ? 10 : searchFilter.pageSize;
             int page = searchFilter.page == 0 ? 1 : searchFilter.page;
-            var items = (dynamic)null;
+            var items = (dynamic)null!;
 
             int totalItems = farmerherdlist.Count;
             int totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
             items = farmerherdlist.Skip((page - 1) * pagesize).Take(pagesize).ToList();
-            //var herdModels = convertDataRowListToHerdModelList(items);
-
+            
             var results = new List<HerdFarmerPageModel>();
             var item = new HerdFarmerPageModel();
 
